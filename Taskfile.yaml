@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  default:
+    desc: 'Tidy and Build the Go project'
+    cmds:
+      - task: tidy
+      - task: build
+
+  tidy:
+    desc: 'Tidy the Go module dependencies'
+    cmds:
+      - go mod tidy
+
+  build:
+    desc: 'Build the Go binary with static linking'
+    cmds:
+      - CGO_ENABLED=1 GOOS=linux CC=musl-gcc go build -a -tags netgo -installsuffix netgo -o /go/bin/docker -ldflags '-extldflags "-static"'
+    env:
+      CGO_ENABLED: '1'
+      GOOS: 'linux'
+      CC: 'musl-gcc'
