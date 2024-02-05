@@ -1,0 +1,16 @@
+FROM golang:1.18 as build
+RUN apt-get update && apt-get install -y --no-install-recommends musl-tools
+WORKDIR /go/src/app
+COPY . .
+WORKDIR /go/src/app/Client
+RUN go mod tidy
+RUN CGO_ENABLED=1 GOOS=linux CC=musl-gcc go build -a -tags netgo -installsuffix netgo -o /go/bin/docker -ldflags '-extldflags "-static"'
+
+FROM gcr.io/kaniko-project/executor:latest AS kaniko-executor
+
+FROM alpine
+COPY --from=build /go/bin/docker /kaniko/
+COPY --from=kaniko-executor /kaniko/* /kaniko/
+COPY --from=kaniko-executor /etc/nsswitch.conf /etc/nsswitch.conf
+COPY Example Example #for demo only, use your own folder/path
+ENV PATH="/kaniko:${PATH}"
