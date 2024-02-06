@@ -13,13 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup GOPRIVATE
-      run: go env -w GOPRIVATE=github.com/CoreViewInc/CoreNiko
-
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.17'
+
+    - name: Setup GOPRIVATE
+      run: go env -w GOPRIVATE=github.com/CoreViewInc/CoreNiko
 
     - name: Install Task
       run: |
