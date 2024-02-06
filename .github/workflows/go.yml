@@ -21,4 +21,4 @@ jobs:
         sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
     - name: Execute Task
-      run: cd Client && go mod tidy && CGO_ENABLED=1 GOOS=linux CC=musl-gcc go build -a -tags netgo -installsuffix netgo -o /go/bin/docker -ldflags '-extldflags "-static"'
+      run: cd Client && go mod init docker && go mod tidy && CGO_ENABLED=1 GOOS=linux CC=musl-gcc go build -a -tags netgo -installsuffix netgo -o /go/bin/docker -ldflags '-extldflags "-static"'
