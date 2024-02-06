@@ -27,3 +27,32 @@ jobs:
 
     - name: Execute Task
       run: task build
+
+    # If you want to create a release and upload the binary to that release:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Client/docker
+        asset_name: docker-binary
+        asset_content_type: application/octet-stream
+
+    # If you want to just upload the binary as a workflow artifact:
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-binary
+        path: ./Client/docker
