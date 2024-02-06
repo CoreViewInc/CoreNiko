@@ -12,6 +12,7 @@ var (
 	 buildOptions shared.BuildOptions // global variable to hold build options
 	 username string
 	 password string
+	 labels []string
 )
 
 // DockerCLI provides methods which execute docker commands.
@@ -131,6 +132,7 @@ func init() {
 	RootCmd.AddCommand(pullCmd)
 	RootCmd.AddCommand(inspectCmd)
 	buildCmd.Flags().StringArrayVarP(&buildOptions.Tags, "tag", "t", []string{}, "Name and optionally a tag in the 'name:tag' format")
+	buildCmd.Flags().StringArrayVar(&labels, "label", []string{}, "Set metadata for an image")
 	buildCmd.Flags().StringP("file", "f", "Dockerfile", "Name of the Dockerfile")
 	loginCmd.Flags().StringVarP(&username, "username", "u", "", "Username for registry authentication")
 	loginCmd.Flags().StringVarP(&password, "password", "p", "", "Password for registry authentication")
