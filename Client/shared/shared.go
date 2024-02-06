@@ -5,9 +5,11 @@ type DockerBuilder interface {
     BuildImage(options BuildOptions, contextPath string, dockerfilePath string)
     TagImage(args []string)
     PushImage(args []string)
-    Login(args []string,username string,password string)
+    Login(args []string, username string, password string)
     PullImage(imageName string) error
     InspectImage(args []string) (string, error)
+    ListImages(args []string) (string, error) // New method for listing images
+    ImageHistory(args []string) (string, error) // New method for showing image history
 }
 
 // Definition for executor, in this case kaniko is the only provided execution provider.

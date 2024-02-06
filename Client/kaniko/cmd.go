@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"errors"
+	"os"
 	auth "github.com/CoreViewInc/CoreNiko/auth"
 )
 
@@ -53,10 +54,19 @@ func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath stri
 		} else {
 			fmt.Println("KanikoExecutor context is currently:", kanikoExecutor.Context)
 		}
-		if len(dockerfilePath) > 0{
-			kanikoExecutor.Dockerfile = dockerfilePath
-		}else{
-			fmt.Println("KanikoExecutor Dockerfile is currently:", kanikoExecutor.Dockerfile)
+
+		// Check if dockerfilePath is not empty and the file exists
+		if len(dockerfilePath) > 0 {
+			if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+				fmt.Printf("Dockerfile '%s' does not exist\n", dockerfilePath)
+				return // Exit the function, or handle the error as needed
+			} else {
+				kanikoExecutor.Dockerfile = dockerfilePath
+				fmt.Println("Setting KanikoExecutor Dockerfile to:", kanikoExecutor.Dockerfile)
+			}
+		} else {
+			fmt.Println("No Dockerfile path provided")
+			return // Exit the function, or handle the error as needed
 		}
 
 		//build must have atleast a tag otherwise it should generated random uuid
@@ -74,11 +84,14 @@ func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath stri
 		}
 		for _,stage := range stages{
 			kanikoExecutor.Destination[0] = stage
-			kanikoExecutor.Execute()
+			stdout, stderr, _ := kanikoExecutor.Execute()
+			fmt.Println(stdout)
+			fmt.Println(stderr)
 		}
 	} else {
 		fmt.Println("Executor is not of type *KanikoExecutor and does not have a Context field.")
 	}
+	fmt.Println("Kaniko build complete.")
 }
 
 func (kd *KanikoDocker) TagImage(args []string) {
@@ -104,5 +117,13 @@ func (kd *KanikoDocker) InspectImage(args []string) (string, error){
 
 func (kd *KanikoDocker) PullImage(imageName string) error {
 	return nil
+}
+
+func (kd *KanikoDocker) ListImages(args []string) (string, error) {
+	return "",nil
+}
+
+func (kd *KanikoDocker) ImageHistory(args []string) (string, error) {
+	return "",nil
 }
 

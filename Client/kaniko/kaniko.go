@@ -72,13 +72,10 @@ func (ke *KanikoExecutor) Execute() (string, string, error) {
 	//ke.Registry.RecordImage(ke.Destination[0], "/path/to/local/image/or/remote/repository")
 	fmt.Println(args)
 	cmd := exec.Command("executor", args...)
-
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
-	fmt.Println(stdout.String())
-	fmt.Println(stderr.String())
 	return stdout.String(), stderr.String(), err
 }
 
