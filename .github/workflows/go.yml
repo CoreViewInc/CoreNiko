@@ -52,12 +52,11 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./Client/docker
-        asset_name: docker-binary
+        asset_name: docker
         asset_content_type: application/octet-stream
 
-    # If you want to just upload the binary as a workflow artifact:
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: docker-binary
+        name: docker
         path: ./Client/docker
