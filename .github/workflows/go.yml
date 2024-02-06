@@ -2,9 +2,7 @@ name: Go
 
 on:
   push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
+    branches: [ "feature/fix_build" ]
 
 jobs:
 
@@ -23,4 +21,4 @@ jobs:
         sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
     - name: Execute Task
-      run: task build
+      run: cd Client && go mod tidy && CGO_ENABLED=1 GOOS=linux CC=musl-gcc go build -a -tags netgo -installsuffix netgo -o /go/bin/docker -ldflags '-extldflags "-static"'
