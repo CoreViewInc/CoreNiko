@@ -3,7 +3,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	shared "docker/shared" 
+	shared "github.com/CoreViewInc/CoreNiko/shared" 
 )
 
 var (

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	bolt "go.etcd.io/bbolt"
-	shared "docker/shared" 
+	shared "github.com/CoreViewInc/CoreNiko/shared" 
 )
 
 // ImageRegistry is a simple abstraction for a Docker image registry using bbolt.

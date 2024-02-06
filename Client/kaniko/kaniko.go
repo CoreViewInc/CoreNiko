@@ -3,7 +3,7 @@ package kaniko
 import (
 	"bytes"
 	"os/exec"
-	shared "docker/shared"
+	shared "github.com/CoreViewInc/CoreNiko/shared"
 	"fmt"
 )
 

@@ -1,4 +1,4 @@
-module docker
+module github.com/CoreViewInc/CoreNiko
 
 go 1.17
 

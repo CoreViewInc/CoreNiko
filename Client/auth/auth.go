@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	environment "docker/environment"
+	environment "github.com/CoreViewInc/CoreNiko/environment"
 )
 
 type DockerAuth struct {

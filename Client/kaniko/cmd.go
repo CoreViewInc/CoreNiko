@@ -2,11 +2,11 @@ package kaniko
 
 import (
 	//cmd "docker/cmd" // import the cmd package that contains our RootCmd
-	shared "docker/shared"
+	shared "github.com/CoreViewInc/CoreNiko/shared"
 	"fmt"
 	"regexp"
 	"errors"
-	auth "docker/auth"
+	auth "github.com/CoreViewInc/CoreNiko/auth"
 )
 
 type KanikoDocker struct{
@@ -90,7 +90,7 @@ func (kd *KanikoDocker) PushImage(args []string) {
 }
 
 func (kd *KanikoDocker) Login(args []string,username string,password string) {
-	dockerauth :=
+	dockerauth := auth.New()
 	if len(username)>0 && len(password)>0{
 		dockerauth = auth.NewUserPassAuth(username, password)
 	}

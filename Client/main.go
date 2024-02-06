@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 	"fmt"
-	docker "docker/cmd" // import the cmd package that contains our RootCmd
-	kanikocmd "docker/kaniko" // import the cmd package that contains our RootCmd
-	registry "docker/registry"
+	docker "github.com/CoreViewInc/CoreNiko/cmd" // import the cmd package that contains our RootCmd
+	kanikocmd "github.com/CoreViewInc/CoreNiko/kaniko" // import the cmd package that contains our RootCmd
+	registry "github.com/CoreViewInc/CoreNiko/registry"
 )
 
 func main() {
