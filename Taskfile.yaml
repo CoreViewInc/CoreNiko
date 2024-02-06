@@ -11,7 +11,7 @@ tasks:
     dir: Client
     cmds:
       - go mod tidy
-      - CGO_ENABLED=1 GOOS=linux CC=musl-gcc go build -a -tags netgo -installsuffix netgo -o /go/bin/docker -ldflags '-extldflags "-static"'
+      - CGO_ENABLED=1 GOOS=linux CC=musl-gcc go build -a -tags netgo -installsuffix netgo -o docker -ldflags '-extldflags "-static"'
     env:
       CGO_ENABLED: '1'
       GOOS: 'linux'
