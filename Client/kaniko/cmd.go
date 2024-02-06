@@ -96,3 +96,13 @@ func (kd *KanikoDocker) Login(args []string,username string,password string) {
 	}
 	dockerauth.CreateDockerConfigJSON()
 }
+
+func (kd *KanikoDocker) InspectImage(args []string) (string, error){
+	return "",nil
+}
+
+
+func (kd *KanikoDocker) PullImage(imageName string) error {
+	return nil
+}
+

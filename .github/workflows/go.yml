@@ -3,8 +3,10 @@ name: Go
 on:
   push:
     branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
+      
+permissions:
+  contents: write
+  actions: read
 
 jobs:
 
@@ -28,15 +30,18 @@ jobs:
     - name: Execute Task
       run: task build
 
-    # If you want to create a release and upload the binary to that release:
+    - name: Generate Unique Tag
+      id: uniquetag
+      run: echo "RELEASE_TAG=$(date +'%Y%m%d%H%M%S')-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ env.RELEASE_TAG }}
+        release_name: Release ${{ env.RELEASE_TAG }}
         draft: false
         prerelease: false
 
@@ -47,12 +52,11 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./Client/docker
-        asset_name: docker-binary
+        asset_name: docker
         asset_content_type: application/octet-stream
 
-    # If you want to just upload the binary as a workflow artifact:
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: docker-binary
+        name: docker
         path: ./Client/docker

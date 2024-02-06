@@ -6,6 +6,8 @@ type DockerBuilder interface {
     TagImage(args []string)
     PushImage(args []string)
     Login(args []string,username string,password string)
+    PullImage(imageName string) error
+    InspectImage(args []string) (string, error)
 }
 
 // Definition for executor, in this case kaniko is the only provided execution provider.

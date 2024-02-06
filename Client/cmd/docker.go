@@ -3,7 +3,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	shared "github.com/CoreViewInc/CoreNiko/shared" 
+	shared "github.com/CoreViewInc/CoreNiko/shared"
+	"fmt"
 )
 
 var (
@@ -66,15 +67,74 @@ var loginCmd = &cobra.Command {
 	Run:   func(cmd *cobra.Command, args []string) { DockerCLI.Service.Login(args, username, password) },
 }
 
+var pullCmd = &cobra.Command{
+	Use:   "pull NAME[:TAG]",
+	Short: "Pull an image or a repository from a registry",
+	Long:  `This command is used to pull an image or a repository from a Docker registry.`,
+	Args:  cobra.ExactArgs(1), // Expect exactly one argument, the name of the image
+	Run: func(cmd *cobra.Command, args []string) {
+		imageName := args[0]
+		DockerCLI.Service.PullImage(imageName)
+	},
+}
+
+var inspectCmd = &cobra.Command{
+    Use:   "inspect [OPTIONS] NAME|ID [NAME|ID...]",
+    Short: "Return low-level information on Docker objects",
+    Long: `Return low-level information on Docker objects, including containers, images, volumes, nodes, networks, services, and more.
+By default, docker inspect will render all results in a JSON array. This command is capable of inspecting multiple targets at a time.`,
+    // Allowing for a variable number of arguments 
+    Args:  cobra.MinimumNArgs(1), 
+	RunE: func(cmd *cobra.Command, args []string) error {
+	    // Retrieve flags. This example assumes necessary flags are added to this Cobra command elsewhere in the code.
+	    format, _ := cmd.Flags().GetString("format")
+	    size, _ := cmd.Flags().GetBool("size")
+	    targetType, _ := cmd.Flags().GetString("type")
+	 
+	    infoArgs := []string{}
+
+	    // Adding type flag to arguments if specified
+	    if targetType != "" {
+	        infoArgs = append(infoArgs, "--type="+targetType)
+	    }
+
+	    // Adding format flag to arguments if specified
+	    if format != "" {
+	        infoArgs = append(infoArgs, "--format="+format)
+	    }
+
+	    // Adding size flag to arguments if specified
+	    if size {
+	        infoArgs = append(infoArgs, "--size")
+	    }
+
+	    // Adding the actual object names or IDs to inspect
+	    infoArgs = append(infoArgs, args...)
+
+	    // Executing inspection with the collected arguments
+	    result, err := DockerCLI.Service.InspectImage(infoArgs)
+	    if err != nil {
+	        return err
+	    }
+
+	    // Printing result
+	    fmt.Println(result)
+	    return nil
+	},
+}
 
 func init() {
 	RootCmd.AddCommand(buildCmd)
 	RootCmd.AddCommand(tagCmd)
 	RootCmd.AddCommand(pushCmd)
 	RootCmd.AddCommand(loginCmd)
+	RootCmd.AddCommand(pullCmd)
+	RootCmd.AddCommand(inspectCmd)
 	buildCmd.Flags().StringArrayVarP(&buildOptions.Tags, "tag", "t", []string{}, "Name and optionally a tag in the 'name:tag' format")
 	buildCmd.Flags().StringP("file", "f", "Dockerfile", "Name of the Dockerfile")
 	loginCmd.Flags().StringVarP(&username, "username", "u", "", "Username for registry authentication")
 	loginCmd.Flags().StringVarP(&password, "password", "p", "", "Password for registry authentication")
-	
+	inspectCmd.Flags().StringP("type", "", "", "Specify the type of object to inspect (container, image, etc.)")
+	inspectCmd.Flags().StringP("format", "f", "", "Format the output using the given Go template")
+	inspectCmd.Flags().BoolP("size", "s", false, "Display total file sizes if the type is container")	
 }
