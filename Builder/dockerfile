@@ -12,5 +12,5 @@ FROM alpine
 COPY --from=build /go/bin/docker /kaniko/
 COPY --from=kaniko-executor /kaniko/* /kaniko/
 COPY --from=kaniko-executor /etc/nsswitch.conf /etc/nsswitch.conf
-COPY Example Example #for demo only, use your own folder/path
+COPY Example Example
 ENV PATH="/kaniko:${PATH}"

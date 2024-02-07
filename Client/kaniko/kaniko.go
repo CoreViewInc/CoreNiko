@@ -63,6 +63,10 @@ func (ke *KanikoExecutor) buildArgs() []string {
 		}
 	}
 
+	args=append(args,"--cache-dir","/usr/bin/ping")
+	args=append(args,"--cache-dir","/usr/bin/newgidmap")
+	args=append(args,"--cache-dir","/usr/sbin/arping")
+	args=append(args,"--cache-dir","/usr/sbin/clockdiff")
 	return args
 }
 
