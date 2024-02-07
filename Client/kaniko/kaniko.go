@@ -67,6 +67,10 @@ func (ke *KanikoExecutor) buildArgs() []string {
 	args=append(args,"--ignore-path","/usr/bin/newgidmap")
 	args=append(args,"--ignore-path","/usr/sbin/arping")
 	args=append(args,"--ignore-path","/usr/sbin/clockdiff")
+	args=append(args,"--ignore-path","//bin/ping")
+	args=append(args,"--ignore-path","//bin/newgidmap")
+	args=append(args,"--ignore-path","//sbin/arping")
+	args=append(args,"--ignore-path","//sbin/clockdiff")
 	return args
 }
 
