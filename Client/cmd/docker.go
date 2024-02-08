@@ -84,7 +84,12 @@ var (
 	    Long: `Return low-level information on Docker objects, including containers, images, volumes, nodes, networks, services, and more.
 	By default, docker inspect will render all results in a JSON array. This command is capable of inspecting multiple targets at a time.`,
 	    // Allowing for a variable number of arguments 
-	    Args:  cobra.MinimumNArgs(1), 
+		Args: func(cmd *cobra.Command, args []string) error {
+	        if len(args) < 1 {
+	            fmt.Println("placeholder")
+	        }
+	        return nil
+	    },
 		RunE: func(cmd *cobra.Command, args []string) error {
 		    // Retrieve flags. This example assumes necessary flags are added to this Cobra command elsewhere in the code.
 		    format, _ := cmd.Flags().GetString("format")
@@ -198,8 +203,6 @@ var (
 	        return nil
 	    },
 	}
-
-
 )
 
 func init() {
