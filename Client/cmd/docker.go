@@ -24,7 +24,7 @@ var (
 	 username string
 	 password string
 	 labels []string
-
+	 url string
 
  	RootCmd = &cobra.Command {
 		Use:   "docker",
@@ -64,7 +64,7 @@ var (
 		Use:   "login [OPTIONS] [SERVER]",
 		Short: "Log in to a Docker registry",
 		Long:  `This command is used to log in to a Docker registry. If no server is specified, the default is to log in to the registry at Docker Hub.`,
-		Run:   func(cmd *cobra.Command, args []string) { DockerCLI.Service.Login(args, username, password) },
+		Run:   func(cmd *cobra.Command, args []string) { DockerCLI.Service.Login(args, username, password,url) },
 	}
 
  	pullCmd = &cobra.Command{
@@ -161,7 +161,7 @@ var (
 	    },
 	}
 
- 	historyCmd = &cobra.Command{
+	historyCmd = &cobra.Command{
 	    Use:   "history [OPTIONS] IMAGE",
 	    Short: "Show the history of an image",
 	    Long:  `This command shows the history of an image, including the layers and size information.`,
@@ -171,16 +171,22 @@ var (
 	        format, _ := cmd.Flags().GetString("format")
 	        noTrunc, _ := cmd.Flags().GetBool("no-trunc")
 	        
-	        historyArgs := []string{}
+	        // Initializing the slice of arguments with the static part
+	        historyArgs := []string{"history"}
+	        
+	        // Handling the format flag if provided
 	        if format != "" {
-	            historyArgs = append(historyArgs, "--format="+format)
+	            historyArgs = append(historyArgs, "--format")
+	            historyArgs = append(historyArgs, format)
 	        }
+	        
+	        // Handling the no-trunc flag if provided
 	        if noTrunc {
 	            historyArgs = append(historyArgs, "--no-trunc")
 	        }
 
-	        imageName := args[0]
-	        historyArgs = append(historyArgs, imageName)
+	        // Appending the image name to the list of arguments
+	        historyArgs = append(historyArgs, args[0])
 
 	        // Executing the history command with the collected arguments
 	        result, err := DockerCLI.Service.ImageHistory(historyArgs)
@@ -192,6 +198,8 @@ var (
 	        return nil
 	    },
 	}
+
+
 )
 
 func init() {
@@ -214,6 +222,6 @@ func init() {
     imagesCmd.Flags().BoolP("all", "a", false, "Show all images (default hides intermediate images)")
     imagesCmd.Flags().StringArrayP("filter", "f", []string{}, "Filter output based on conditions provided")
     imagesCmd.Flags().StringP("format", "", "", "Pretty-print images using a Go template")
-    historyCmd.Flags().StringP("format", "", "", "Pretty-print the image history using a Go template")
-    historyCmd.Flags().BoolP("no-trunc", "", false, "Don't truncate output")
+	historyCmd.Flags().StringP("format", "f", "", "Pretty-print the image history using a Go template")
+	historyCmd.Flags().BoolP("no-trunc", "", false, "Don't truncate output")
 }

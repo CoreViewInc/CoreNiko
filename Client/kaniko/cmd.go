@@ -102,10 +102,10 @@ func (kd *KanikoDocker) PushImage(args []string) {
 	fmt.Println("Placeholder - push")
 }
 
-func (kd *KanikoDocker) Login(args []string,username string,password string) {
+func (kd *KanikoDocker) Login(args []string,username string,password,url string) {
 	dockerauth := auth.New()
 	if len(username)>0 && len(password)>0{
-		dockerauth = auth.NewUserPassAuth(username, password)
+		dockerauth = auth.NewUserPassAuth(username, password,url)
 	}
 	dockerauth.CreateDockerConfigJSON()
 }
@@ -124,6 +124,6 @@ func (kd *KanikoDocker) ListImages(args []string) (string, error) {
 }
 
 func (kd *KanikoDocker) ImageHistory(args []string) (string, error) {
-	return "",nil
+	return "placeholder",nil //temporary to provide a debuggable value
 }
 

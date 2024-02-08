@@ -11,6 +11,7 @@ import (
 type DockerAuth struct {
 	Username string
 	Password string
+	URL string
 }
 
 type DockerAuthConfig struct {
@@ -26,7 +27,7 @@ func NewEnvAuth(envProvider *environment.EnvProvider) *DockerAuth {
 	}
 }
 
-func NewUserPassAuth(username, password string) *DockerAuth {
+func NewUserPassAuth(username, password,url string) *DockerAuth {
 	return &DockerAuth{
 		Username: username,
 		Password: password,
@@ -47,7 +48,8 @@ func (da *DockerAuth) CreateDockerConfigJSON() error {
 
 	dockerConfig := DockerAuthConfig{
 		Auths: map[string]map[string]string{
-			"https://index.docker.io/v1/": {
+			da.URL:{
+			//"https://index.docker.io/v1/": {
 				"auth": encodedCredentials,
 			},
 		},
