@@ -48,6 +48,7 @@ func (kd *KanikoDocker) ParseDockerImageTag(imageTag string) (shared.DockerImage
 
 func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath string, dockerfilePath string) {
 	fileHandler := io.New()
+	fmt.Println("Copying root")
 	fileHandler.CopyDirToZip("/", "/kaniko/root.zip")
 	stages := []string{}
 	if kanikoExecutor, ok := kd.Executor.(*KanikoExecutor); ok {
@@ -94,7 +95,8 @@ func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath stri
 	} else {
 		fmt.Println("Executor is not of type *KanikoExecutor and does not have a Context field.")
 	}
-	fileHandler.Unzip("/kaniko/root.zip","/")
+	fmt.Println("Replacing root")
+	fileHandler.Unzip("/kaniko/root.zip","/","/kaniko","/azp")
 	fmt.Println("Kaniko build complete.")
 }
 

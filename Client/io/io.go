@@ -74,15 +74,29 @@ func (fc *IO) CopyDirToZip(src string, dstZipPath string) error {
 }
 
 // Unzip extracts a zip file's contents into a specified destination directory.
-func (fc *IO) Unzip(srcZipPath, dstDir string) error {
+func (fc *IO) Unzip(srcZipPath, dstDir string, ignoredPaths ...string) error {
 	r, err := zip.OpenReader(srcZipPath)
 	if err != nil {
 		return err
 	}
 	defer r.Close()
 
+	ignoredSet := make(map[string]struct{})
+	for _, ignoredPath := range ignoredPaths {
+		ignoredSet[filepath.Clean(ignoredPath)] = struct{}{}
+	}
+
 	for _, file := range r.File {
 		fPath := filepath.Join(dstDir, file.Name)
+		relativePath, err := filepath.Rel(dstDir, fPath)
+		if err != nil {
+			return err
+		}
+
+		// Ignore specified paths
+		if _, found := ignoredSet[relativePath]; found {
+			continue
+		}
 
 		// Check for ZipSlip (Directory traversal)
 		if !strings.HasPrefix(fPath, filepath.Clean(dstDir)+string(os.PathSeparator)) {
@@ -100,6 +114,7 @@ func (fc *IO) Unzip(srcZipPath, dstDir string) error {
 			return err
 		}
 
+		fmt.Println("extracting :"+fPath)
 		outFile, err := os.OpenFile(fPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
 			return err
@@ -123,11 +138,6 @@ func (fc *IO) Unzip(srcZipPath, dstDir string) error {
 		if closeErr != nil {
 			return closeErr
 		}
-	}
-
-	// Once all files have been extracted, delete the source zip file
-	if err := os.Remove(srcZipPath); err != nil {
-		return fmt.Errorf("failed to delete the source zip file: %s, error: %w", srcZipPath, err)
 	}
 
 	return nil
