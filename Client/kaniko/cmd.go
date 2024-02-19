@@ -119,14 +119,10 @@ func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath stri
 		for _,stage := range stages{
 			kanikoExecutor.Destination[0] = stage
 			stdout, stderr, err := kanikoExecutor.Execute()
+			fmt.Println(stdout)
+			fmt.Println(stderr)
 			if err !=nil{
 				panic(err)
-			}
-			if len(stdout)==0{
-				panic("No output from docker build.")
-			}
-			if len(stderr)>0{
-				panic(stderr)
 			}
 			fmt.Println(stdout)
 		}

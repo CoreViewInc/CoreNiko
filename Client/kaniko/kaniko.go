@@ -82,16 +82,15 @@ func (ke *KanikoExecutor) buildArgs() []string {
 func (ke *KanikoExecutor) Execute() (string, string, error) {
 	args := ke.buildArgs()
 	//ke.Registry.RecordImage(ke.Destination[0], "/path/to/local/image/or/remote/repository")
-	// Change root to the new directory
+	
+	// Change root to the new directory and handle errors
 	if err := syscall.Chroot(ke.RootDir); err != nil {
-		fmt.Println("Change root to the new directory failed")
-		return "","",err
+		return "", "", fmt.Errorf("failed to change root: %w", err)
 	}
 
-	// Changing directory to "/"
+	// Changing directory to "/" and handle errors
 	if err := os.Chdir("/"); err != nil {
-		fmt.Println("Change directory to / failed")
-		return "","",err
+		return "", "", fmt.Errorf("failed to change directory to '/': %w", err)
 	}
 
 	fmt.Println(args)
@@ -99,8 +98,18 @@ func (ke *KanikoExecutor) Execute() (string, string, error) {
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+	
 	err := cmd.Run()
-	return stdout.String(), stderr.String(), err
+	
+	if err != nil {
+		// If error is an ExitError, add exit code to the returned error
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			err = fmt.Errorf("command exited with code %d: %w", exitErr.ExitCode(), err)
+		}
+		return stdout.String(), stderr.String(), err
+	}
+
+	return stdout.String(), stderr.String(), nil
 }
 
 func New(registry shared.Registry,envProvider *environment.EnvProvider) (shared.DockerBuilder, shared.ExecutorInterface) {
