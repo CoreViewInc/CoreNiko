@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"regexp"
 	"errors"
+	"path/filepath"
 	"os"
 	auth "github.com/CoreViewInc/CoreNiko/auth"
 	environment "github.com/CoreViewInc/CoreNiko/environment"
+	io "github.com/CoreViewInc/CoreNiko/io"
 )
 
 type KanikoDocker struct{
@@ -47,14 +49,42 @@ func (kd *KanikoDocker) ParseDockerImageTag(imageTag string) (shared.DockerImage
 	return components, nil
 }
 
+func (kd *KanikoDocker) CopyContextAndDockerfile(contextPath string, dockerfilePath string) error {
+	// Ensure the KanikoExecutor RootsDir is not empty and exists.
+	if kanikoExecutor, ok := kd.Executor.(*KanikoExecutor); ok {
+		// Recursively copy the context directory to the RootDir of the executor.
+		err := io.CopyDir(contextPath, kanikoExecutor.RootDir)
+		if err != nil {
+			return fmt.Errorf("failed to copy context: %w", err)
+		}
+
+		// Calculate the path that the Dockerfile will have inside the RootDir.
+		dockerfileInsideRootDir := filepath.Join(kanikoExecutor.RootDir, filepath.Base(dockerfilePath))
+
+		// Copy the Dockerfile to the desired location inside RootDir.
+		err = io.CopyFile(dockerfilePath, dockerfileInsideRootDir)
+		if err != nil {
+			return fmt.Errorf("failed to copy Dockerfile: %w", err)
+		}
+
+		return nil // Success, no errors.
+	}
+
+	return errors.New("Executor is not of type *KanikoExecutor")
+}
+
 func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath string, dockerfilePath string) {
 	stages := []string{}
 	if kanikoExecutor, ok := kd.Executor.(*KanikoExecutor); ok {
+
+		// Calc
+
 		if len(contextPath) > 0 {
 			kanikoExecutor.Context = contextPath
 			fmt.Println("KanikoExecutor context set to:", kanikoExecutor.Context)
 		} else {
-			fmt.Println("KanikoExecutor context is currently:", kanikoExecutor.Context)
+			fmt.Println("KanikoExecutor context is currently empty!:")
+			return
 		}
 
 		// Check if dockerfilePath is not empty and the file exists
@@ -70,6 +100,8 @@ func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath stri
 			fmt.Println("No Dockerfile path provided")
 			return // Exit the function, or handle the error as needed
 		}
+
+		kd.CopyContextAndDockerfile(kanikoExecutor.Context, dockerfilePath)
 
 		//build must have atleast a tag otherwise it should generated random uuid
 		if len(options.Tags)>0{

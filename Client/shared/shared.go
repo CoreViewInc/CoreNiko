@@ -8,8 +8,9 @@ type DockerBuilder interface {
     Login(args []string, username string, password string,url string)
     PullImage(imageName string) error
     InspectImage(args []string) (string, error)
-    ListImages(args []string) (string, error) // New method for listing images
-    ImageHistory(args []string) (string, error) // New method for showing image history
+    ListImages(args []string) (string, error)
+    ImageHistory(args []string) (string, error)
+    CopyContextAndDockerfile(contextPath string, dockerfilePath string) error
 }
 
 // Definition for executor, in this case kaniko is the only provided execution provider.
