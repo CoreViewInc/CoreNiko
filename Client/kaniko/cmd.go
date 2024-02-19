@@ -60,7 +60,7 @@ func (kd *KanikoDocker) CopyContextAndDockerfile(contextPath string, dockerfileP
 
 		// Calculate the path that the Dockerfile will have inside the RootDir.
 		dockerfileInsideRootDir := filepath.Join(kanikoExecutor.RootDir, filepath.Base(dockerfilePath))
-
+		fmt.Println("Copying "+dockerfilePath+" to :"+dockerfileInsideRootDir)
 		// Copy the Dockerfile to the desired location inside RootDir.
 		err = io.CopyFile(dockerfilePath, dockerfileInsideRootDir)
 		if err != nil {

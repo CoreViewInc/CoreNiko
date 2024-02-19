@@ -1,11 +1,10 @@
 package io
 
 import (
+	"io"
 	"os"
 	"path/filepath"
-	"io"
 )
-
 
 func CopyDir(src string, dest string) error {
 	// Get properties of source directory
@@ -14,28 +13,30 @@ func CopyDir(src string, dest string) error {
 		return err
 	}
 
-	// Create the destination directory
+	// Create the destination directory with the same permissions as the source
 	err = os.MkdirAll(dest, srcInfo.Mode())
 	if err != nil {
 		return err
 	}
 
-	directory, _ := os.Open(src)
-	objects, err := directory.Readdir(-1)
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return err
+	}
 
-	for _, obj := range objects {
-		srcFilePointer := filepath.Join(src, obj.Name())
-		destFilePointer := filepath.Join(dest, obj.Name())
+	for _, entry := range entries {
+		srcPath := filepath.Join(src, entry.Name())
+		destPath := filepath.Join(dest, entry.Name())
 
-		if obj.IsDir() {
-			// Create sub-directories, recursively.
-			err = CopyDir(srcFilePointer, destFilePointer)
+		if entry.IsDir() {
+			// Recursively copy sub-directories
+			err = CopyDir(srcPath, destPath)
 			if err != nil {
 				return err
 			}
 		} else {
-			// Perform the file copy.
-			err = CopyFile(srcFilePointer, destFilePointer)
+			// Copy the file
+			err = CopyFile(srcPath, destPath)
 			if err != nil {
 				return err
 			}
@@ -45,27 +46,34 @@ func CopyDir(src string, dest string) error {
 	return nil
 }
 
-func CopyFile(src, dst string) error {
-	var err error
-	var srcfd *os.File
-	var dstfd *os.File
-	var srcinfo os.FileInfo
+func CopyFile(src, dest string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
 
-	if srcfd, err = os.Open(src); err != nil {
+	// Get the file information
+	srcInfo, err := srcFile.Stat()
+	if err != nil {
 		return err
 	}
-	defer srcfd.Close()
 
-	if dstfd, err = os.Create(dst); err != nil {
+	// Ensure the destination directory exists
+	destDir := filepath.Dir(dest)
+	err = os.MkdirAll(destDir, srcInfo.Mode().Perm())
+	if err != nil {
 		return err
 	}
-	defer dstfd.Close()
 
-	if _, err = io.Copy(dstfd, srcfd); err != nil {
+	// Create the destination file
+	destFile, err := os.OpenFile(dest, os.O_RDWR|os.O_CREATE|os.O_TRUNC, srcInfo.Mode())
+	if err != nil {
 		return err
 	}
-	if srcinfo, err = os.Stat(src); err != nil {
-		return err
-	}
-	return os.Chmod(dst, srcinfo.Mode())
+	defer destFile.Close()
+
+	// Copy the file content
+	_, err = io.Copy(destFile, srcFile)
+	return err
 }
