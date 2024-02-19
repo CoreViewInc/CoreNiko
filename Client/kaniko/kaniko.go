@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"syscall"
-	"log"
 )
 
 type KanikoExecutor struct {
@@ -85,17 +84,18 @@ func (ke *KanikoExecutor) Execute() (string, string, error) {
 	//ke.Registry.RecordImage(ke.Destination[0], "/path/to/local/image/or/remote/repository")
 	// Change root to the new directory
 	if err := syscall.Chroot(ke.RootDir); err != nil {
-		log.Fatalf("Chroot to %s failed: %v", ke.RootDir, err)
+		fmt.Println("Change root to the new directory failed")
 		return "","",err
 	}
 
 	// Changing directory to "/"
 	if err := os.Chdir("/"); err != nil {
-		log.Fatalf("Chdir to / failed: %v", err)
+		fmt.Println("Change directory to / failed")
+		return "","",err
 	}
 
 	fmt.Println(args)
-	cmd := exec.Command("executor", args...)
+	cmd := exec.Command("/kaniko/executor", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

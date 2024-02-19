@@ -118,9 +118,17 @@ func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath stri
 		}
 		for _,stage := range stages{
 			kanikoExecutor.Destination[0] = stage
-			stdout, stderr, _ := kanikoExecutor.Execute()
+			stdout, stderr, err := kanikoExecutor.Execute()
+			if err !=nil{
+				panic(err)
+			}
+			if len(stdout)==0{
+				panic("No output from docker build.")
+			}
+			if len(stderr)>0{
+				panic(stderr)
+			}
 			fmt.Println(stdout)
-			fmt.Println(stderr)
 		}
 	} else {
 		fmt.Println("Executor is not of type *KanikoExecutor and does not have a Context field.")
