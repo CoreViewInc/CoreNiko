@@ -6,15 +6,27 @@ import (
 	"path/filepath"
 )
 
+// CopyDir recursively copies a directory tree, attempting to preserve permissions.
+// The dest parameter should be the base destination directory where src structure will start.
 func CopyDir(src string, dest string) error {
+	// Define the source base path for path concatenation
+	srcBase := filepath.Dir(src)
+
 	// Get properties of source directory
 	srcInfo, err := os.Stat(src)
 	if err != nil {
 		return err
 	}
 
+	// Calculate the destination directory path
+	relPath, err := filepath.Rel(srcBase, src)
+	if err != nil {
+		return err
+	}
+	destPath := filepath.Join(dest, relPath)
+
 	// Create the destination directory with the same permissions as the source
-	err = os.MkdirAll(dest, srcInfo.Mode())
+	err = os.MkdirAll(destPath, srcInfo.Mode())
 	if err != nil {
 		return err
 	}
@@ -26,17 +38,16 @@ func CopyDir(src string, dest string) error {
 
 	for _, entry := range entries {
 		srcPath := filepath.Join(src, entry.Name())
-		destPath := filepath.Join(dest, entry.Name())
 
 		if entry.IsDir() {
 			// Recursively copy sub-directories
-			err = CopyDir(srcPath, destPath)
+			err = CopyDir(srcPath, dest)
 			if err != nil {
 				return err
 			}
 		} else {
 			// Copy the file
-			err = CopyFile(srcPath, destPath)
+			err = CopyFile(srcPath, dest)
 			if err != nil {
 				return err
 			}
@@ -46,7 +57,9 @@ func CopyDir(src string, dest string) error {
 	return nil
 }
 
-func CopyFile(src, dest string) error {
+// CopyFile copies a single file from src to dest, including the full src directory structure.
+func CopyFile(src string, dest string) error {
+	// Open the source file
 	srcFile, err := os.Open(src)
 	if err != nil {
 		return err
@@ -59,15 +72,37 @@ func CopyFile(src, dest string) error {
 		return err
 	}
 
+	// Ensure the src is not a directory
+	if srcInfo.IsDir() {
+		return &os.PathError{Op: "copy", Path: src, Err: os.ErrInvalid}
+	}
+
+	// Find the root directory of the src to determine the relative path
+	srcRootPath := filepath.VolumeName(src)
+	if srcRootPath == "" { // On UNIX-like systems, the root is '/'
+		srcRootPath = "/"
+	} else { // On Windows, it may be something like 'C:\'
+		srcRootPath = srcRootPath + "\\"
+	}
+	
+	// Calculate the relative path
+	relPath, err := filepath.Rel(srcRootPath, src)
+	if err != nil {
+		return err
+	}
+
+	// Create the full destination path by appending the relative path to dest
+	destPath := filepath.Join(dest, relPath)
+
 	// Ensure the destination directory exists
-	destDir := filepath.Dir(dest)
+	destDir := filepath.Dir(destPath)
 	err = os.MkdirAll(destDir, srcInfo.Mode().Perm())
 	if err != nil {
 		return err
 	}
 
 	// Create the destination file
-	destFile, err := os.OpenFile(dest, os.O_RDWR|os.O_CREATE|os.O_TRUNC, srcInfo.Mode())
+	destFile, err := os.Create(destPath)
 	if err != nil {
 		return err
 	}
