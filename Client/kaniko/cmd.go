@@ -7,12 +7,13 @@ import (
 	"regexp"
 	"errors"
 	"os"
-	io "github.com/CoreViewInc/CoreNiko/io"
 	auth "github.com/CoreViewInc/CoreNiko/auth"
+	environment "github.com/CoreViewInc/CoreNiko/environment"
 )
 
 type KanikoDocker struct{
 	Executor shared.ExecutorInterface
+	Env *environment.EnvProvider
 }
 
 // ParseDockerImageTag takes a Docker image tag string and extracts its components.
@@ -47,9 +48,6 @@ func (kd *KanikoDocker) ParseDockerImageTag(imageTag string) (shared.DockerImage
 }
 
 func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath string, dockerfilePath string) {
-	fileHandler := io.New()
-	fmt.Println("Copying root")
-	fileHandler.CopyDirToZip("/", "/kaniko/root.zip")
 	stages := []string{}
 	if kanikoExecutor, ok := kd.Executor.(*KanikoExecutor); ok {
 		if len(contextPath) > 0 {
@@ -95,8 +93,6 @@ func (kd *KanikoDocker) BuildImage(options shared.BuildOptions, contextPath stri
 	} else {
 		fmt.Println("Executor is not of type *KanikoExecutor and does not have a Context field.")
 	}
-	fmt.Println("Replacing root")
-	fileHandler.Unzip("/kaniko/root.zip","/","/kaniko","/azp")
 	fmt.Println("Kaniko build complete.")
 }
 
@@ -109,7 +105,7 @@ func (kd *KanikoDocker) PushImage(args []string) {
 }
 
 func (kd *KanikoDocker) Login(args []string,username string,password,url string) {
-	dockerauth := auth.New()
+	dockerauth := auth.New(kd.Env)
 	if len(username)>0 && len(password)>0{
 		dockerauth = auth.NewUserPassAuth(username, password,url)
 	}

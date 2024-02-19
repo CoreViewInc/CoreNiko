@@ -33,7 +33,8 @@ type Executor struct {
 	BuildArgs          []string
 	AdditionalFlags    map[string]string
 	AdditionalMultiArg map[string][]string
-	Registry *Registry
+	RootDir 		   string
+	Registry		   *Registry
 }
 
 // DockerImageComponents holds the components of a Docker image tag.

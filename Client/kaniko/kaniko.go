@@ -4,7 +4,11 @@ import (
 	"bytes"
 	"os/exec"
 	shared "github.com/CoreViewInc/CoreNiko/shared"
+	environment "github.com/CoreViewInc/CoreNiko/environment"
 	"fmt"
+	"os"
+	"syscall"
+	"log"
 )
 
 type KanikoExecutor struct {
@@ -17,7 +21,8 @@ type KanikoExecutor struct {
 	BuildArgs          []string
 	AdditionalFlags    map[string]string
 	AdditionalMultiArg map[string][]string
-	Registry	shared.Registry
+	Registry		   shared.Registry
+	RootDir 		   string
 }
 
 
@@ -78,6 +83,17 @@ func (ke *KanikoExecutor) buildArgs() []string {
 func (ke *KanikoExecutor) Execute() (string, string, error) {
 	args := ke.buildArgs()
 	//ke.Registry.RecordImage(ke.Destination[0], "/path/to/local/image/or/remote/repository")
+	// Change root to the new directory
+	if err := syscall.Chroot(ke.RootDir); err != nil {
+		log.Fatalf("Chroot to %s failed: %v", ke.RootDir, err)
+		return "","",err
+	}
+
+	// Changing directory to "/"
+	if err := os.Chdir("/"); err != nil {
+		log.Fatalf("Chdir to / failed: %v", err)
+	}
+
 	fmt.Println(args)
 	cmd := exec.Command("executor", args...)
 	var stdout, stderr bytes.Buffer
@@ -87,7 +103,7 @@ func (ke *KanikoExecutor) Execute() (string, string, error) {
 	return stdout.String(), stderr.String(), err
 }
 
-func New(registry shared.Registry) (shared.DockerBuilder, shared.ExecutorInterface) {
+func New(registry shared.Registry,envProvider *environment.EnvProvider) (shared.DockerBuilder, shared.ExecutorInterface) {
 	executor := &KanikoExecutor{ // Use the address operator to get a pointer to Executor
 		Context:             "/workspace/",
 		Dockerfile:          "Dockerfile",
@@ -95,6 +111,7 @@ func New(registry shared.Registry) (shared.DockerBuilder, shared.ExecutorInterfa
 		AdditionalMultiArg:  make(map[string][]string),
 		Registry: registry,
 		Destination: make([]string, 1),
+		RootDir: envProvider.Get("RootDir"),
 	}
 	kanikodocker := &KanikoDocker{Executor: executor} // Use the address operator to get a pointer to KanikoDocker
 	return kanikodocker, executor // Return pointers since methods are implemented with pointer receivers

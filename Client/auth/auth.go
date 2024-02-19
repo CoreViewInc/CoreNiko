@@ -68,6 +68,6 @@ func (da *DockerAuth) CreateDockerConfigJSON() error {
 	return nil
 }
 
-func New() *DockerAuth {
-	return NewEnvAuth(environment.New())
+func New(envProvider *environment.EnvProvider) *DockerAuth {
+	return NewEnvAuth(envProvider)
 }		
